@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why we ask: prototype</title>
+<style>
+:root{--ink:#14212b;--ink2:#4a5a66;--line:#c9d4da;--accent:#0e7c86;--accent-d:#0a5d65;--note:#eaf5f6;--err:#b3261e;--tag-bg:#fdebc8;--tag-tx:#6b4200;--ok:#1d6b3f;--warn:#8a5a00}
+*{box-sizing:border-box}
+body{margin:0;background:#e6ecee;color:var(--ink);font:16px/1.5 "Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif}
+.app{max-width:420px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 0 1px var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.logo{font-weight:700;color:var(--ink);letter-spacing:.01em}
+main{padding:20px 16px 32px}
+h1{font-size:24px;line-height:1.25;margin:0 0 8px}
+h1:focus{outline:none}
+p{margin:0 0 12px}
+.muted{color:var(--ink2);font-size:15px}
+.ctx{background:#f3f6f7;border:1px solid var(--line);padding:10px 12px;margin:16px 0;font-size:15px}
+.q{margin:0 0 24px;padding:0;border:0;min-width:0}
+.lbl{display:block;font-weight:700;font-size:16px;margin:0 0 8px;padding:0}
+.note{background:var(--note);border-left:4px solid var(--accent);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.5}
+.note p{margin:4px 0 0}
+.note-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tag{font-size:12px;font-weight:600;background:var(--tag-bg);color:var(--tag-tx);padding:1px 8px;border-radius:999px;white-space:nowrap}
+.banner{background:#fdecea;border-left:4px solid var(--err);color:#7a1610;padding:10px 12px;margin:0 0 10px;font-size:14px}
+.money{display:flex;align-items:center;border:1px solid var(--ink2);background:#fff}
+.money span{padding:0 12px;font-size:18px;color:var(--ink2)}
+.money input{flex:1;min-width:0;border:0;padding:12px 12px 12px 0;font:inherit;font-size:18px;background:transparent;color:var(--ink)}
+.money:focus-within,.radio:focus-within,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.money input:focus{outline:none}
+.radio{display:flex;align-items:center;gap:12px;border:1px solid var(--line);padding:12px;margin:0 0 8px;cursor:pointer;min-height:48px}
+.radio input{width:20px;height:20px;accent-color:var(--accent);margin:0;flex:none}
+.radio:has(input:checked){border-color:var(--accent);background:#f2fafb}
+.err{color:var(--err);font-size:14px;font-weight:600;margin:6px 0 0}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;padding:10px 16px;font:inherit;font-weight:700;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;text-align:center}
+.btn:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn.secondary{background:#fff;color:var(--accent-d)}
+.btn.secondary:hover{background:#f2fafb}
+.btn[aria-pressed="true"]{background:var(--note);border-color:var(--accent-d)}
+.row{display:flex;gap:8px;margin:0 0 8px}
+.row .btn{flex:1}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.vh:focus-visible+label{outline:3px solid var(--accent);outline-offset:2px}
+.hint{font-weight:600;margin:0 0 8px}
+.picked{font-size:14px;color:var(--ink2);margin:6px 0 0;word-break:break-all}
+.nav{display:flex;align-items:center;gap:12px;margin-top:8px}
+.link{background:none;border:0;padding:12px 4px;font:inherit;color:var(--accent-d);text-decoration:underline;cursor:pointer;min-height:48px}
+.nav .btn{flex:1}
+.check{display:flex;align-items:center;gap:10px;font-size:34px;color:var(--ok);margin-bottom:4px}
+.recap{margin:16px 0;border-top:1px solid var(--line)}
+.recap-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.recap-row dt{font-size:14px;color:var(--ink2)}
+.recap-row dd{margin:2px 0 0;font-weight:600}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px}
+.chip.ok{background:#dff1e6;color:#14472b}.chip.need{background:var(--tag-bg);color:var(--tag-tx)}
+.ended{background:var(--note);border-left:4px solid var(--accent);padding:10px 12px;font-size:14px;margin-top:12px}
+.rev{max-width:720px;margin:16px auto 40px;padding:0 16px}
+.rev>button{font:inherit;background:#fff;border:1px solid var(--ink2);padding:10px 14px;cursor:pointer;min-height:44px}
+.panel{background:#fff;border:1px solid var(--line);padding:16px;margin-top:8px;font-size:14px}
+.panel h2{font-size:16px;margin:0 0 8px}
+.tog{display:flex;gap:10px;align-items:center;margin:0 0 8px}
+.tog input{width:18px;height:18px;accent-color:var(--accent)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{border-bottom:1px solid var(--line);text-align:left;padding:8px 6px;vertical-align:top}
+th{font-size:13px;color:var(--ink2)}
+.st{font-weight:700}.st.pass{color:var(--ok)}.st.warn{color:var(--warn)}.st.fail{color:var(--err)}.st.info{color:var(--ink2)}
+.verdict{margin:12px 0 0;padding:10px 12px;font-weight:700;border:2px solid}
+.verdict.pass{border-color:var(--ok);color:var(--ok)}.verdict.fail{border-color:var(--err);color:var(--err)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+var h = React.createElement;
+
+/* ---------- Fixed copy file (FR6): one place, keyed by question ID, no runtime generation ---------- */
+var FACTS = {
+  F_ACCESS: { text: "staff responsible for handling your case" }
+};
+var COPY = {
+  income_amount:  { fact: "F_ACCESS", version: "0.2",
+    text: "We process this information to assess which instalment arrangements are suitable for you. Access is limited to staff responsible for handling your case." },
+  income_pattern: { fact: "F_ACCESS", version: "0.2",
+    text: "We ask this to understand how your income varies from month to month when we propose an instalment arrangement. Access is limited to staff responsible for handling your case." },
+  income_proof:   { fact: "F_ACCESS", version: "0.2",
+    text: "Proof of income is required to verify your stated income, so that any arrangement rests on accurate information. Access is limited to staff responsible for handling your case." }
+};
+var QUESTION_IDS = ["income_amount", "income_pattern", "income_proof"];
+var BANNED = ["never", "nobody", "no one", "guaranteed", "always", "completely"];
+var PATTERNS = [
+  { v: "same", t: "Stays the same" },
+  { v: "varies", t: "Changes (for example shift work)" },
+  { v: "none", t: "No income right now" }
+];
+
+/* ---------- Helpers ---------- */
+function sentencesOf(t) { return t.match(/[^.!?]+[.!?]/g) || [t]; }
+function wordCount(t) { return t.trim().split(/\s+/).filter(Boolean).length; }
+
+function buildCopy(approved, simulateMissing) {
+  var out = {};
+  QUESTION_IDS.forEach(function (id) {
+    if (simulateMissing && id === "income_proof") return;
+    var c = COPY[id];
+    out[id] = {
+      text: c.text, fact: c.fact, version: c.version,
+      status: approved ? "approved" : "draft",
+      approver: approved ? "Simulated (demo only)" : null
+    };
+  });
+  return out;
+}
+
+function runChecks(copy, approved) {
+  var missing = QUESTION_IDS.filter(function (id) { return !copy[id]; });
+  var present = QUESTION_IDS.filter(function (id) { return copy[id]; });
+  var stats = present.map(function (id) {
+    var ss = sentencesOf(copy[id].text);
+    return { id: id, words: wordCount(copy[id].text), sentences: ss.length,
+             longest: Math.max.apply(null, ss.map(wordCount)) };
+  });
+  var rows = [];
+  rows.push({ fr: "FR1", rule: "Every question has a note",
+    status: missing.length ? "fail" : "pass",
+    detail: missing.length ? "Without a note: " + missing.join(", ") : "Questions without a note: 0 of " + QUESTION_IDS.length });
+  var f2 = stats.filter(function (s) { return s.words > 40 || s.sentences > 2; });
+  rows.push({ fr: "FR2", rule: "40 words or fewer, 2 sentences or fewer",
+    status: f2.length ? "fail" : "pass",
+    detail: stats.map(function (s) { return s.id + ": " + s.words + " words, " + s.sentences + " sentences"; }).join("; ") });
+  var f3 = stats.filter(function (s) { return s.longest > 20; });
+  rows.push({ fr: "FR3", rule: "No sentence over 20 words",
+    status: f3.length ? "fail" : "pass",
+    detail: "Longest sentence: " + Math.max.apply(null, stats.map(function (s) { return s.longest; })) + " words" });
+  var badLink = present.filter(function (id) {
+    var c = copy[id]; var f = FACTS[c.fact];
+    return !f || c.text.toLowerCase().indexOf(f.text.toLowerCase()) === -1;
+  });
+  var banned = present.filter(function (id) {
+    return BANNED.some(function (b) { return copy[id].text.toLowerCase().indexOf(b) !== -1; });
+  });
+  var f4status = (badLink.length || banned.length) ? "fail" : (approved ? "pass" : "warn");
+  rows.push({ fr: "FR4", rule: "Who-can-see line comes from a confirmed fact",
+    status: f4status,
+    detail: badLink.length ? "Not linked to a fact: " + badLink.join(", ")
+      : banned.length ? "Categorical wording in: " + banned.join(", ")
+      : approved ? "All notes link to fact F_ACCESS (confirmed, simulated)"
+      : "Linked to fact F_ACCESS, which is still unconfirmed" });
+  rows.push({ fr: "FR5", rule: "Visible on load, under the label, 360 px",
+    status: "info", detail: "By design: no tap needed. Check visually at 360 px width." });
+  rows.push({ fr: "FR6", rule: "Fixed copy, no runtime generation",
+    status: "info", detail: "By design: text is read from one copy object." });
+  var approvedCount = present.filter(function (id) { return copy[id].status === "approved"; }).length;
+  var f7 = missing.length || approvedCount < QUESTION_IDS.length;
+  rows.push({ fr: "FR7", rule: "Every entry approved or the release build is blocked",
+    status: f7 ? "fail" : "pass",
+    detail: approvedCount + " of " + QUESTION_IDS.length + " notes approved" });
+  var ready = rows.every(function (r) { return r.status === "pass" || r.status === "info"; });
+  return { rows: rows, ready: ready };
+}
+
+/* ---------- Components ---------- */
+function Note(props) {
+  var c = props.copy[props.id];
+  if (!c) {
+    return h("div", { className: "banner", role: "alert", id: "note-" + props.id },
+      "Wording not approved for this question (reviewer view). A release build would be blocked.");
+  }
+  return h("div", { className: "note", id: "note-" + props.id },
+    h("div", { className: "note-head" },
+      h("strong", null, "Why we ask"),
+      c.status !== "approved" ? h("span", { className: "tag" }, "Draft wording") : null),
+    h("p", null, c.text));
+}
+
+function Screen1(props) {
+  return h("main", null,
+    h("h1", { id: "heading", tabIndex: -1 }, "Arrange an instalment plan"),
+    h("p", { className: "muted" }, "You received a payment reminder."),
+    h("div", { className: "ctx" }, "Case reference: DEMO-0001"),
+    h("p", null, "We ask a few short questions. Under each one, we explain why."),
+    h("button", { className: "btn", type: "button", onClick: props.onNext }, "Continue"));
+}
+
+function Screen2(props) {
+  var a = props.answers, e = props.errors, copy = props.copy;
+  var amountDesc = "note-income_amount" + (e.amount ? " err-amount" : "");
+  var patternDesc = "note-income_pattern" + (e.pattern ? " err-pattern" : "");
+  var proofDesc = "note-income_proof proof-hint" + (e.doc ? " err-doc" : "");
+
+  return h("main", null,
+    h("h1", { id: "heading", tabIndex: -1 }, "About your income"),
+    h("p", { className: "muted" }, "Under each question, you can see why we ask."),
+
+    h("div", { className: "q" },
+      h("label", { className: "lbl", htmlFor: "amount" }, "Monthly net income"),
+      h(Note, { id: "income_amount", copy: copy }),
+      h("div", { className: "money" },
+        h("span", { "aria-hidden": "true" }, "\u20AC"),
+        h("input", { id: "amount", type: "text", inputMode: "decimal", autoComplete: "off",
+          value: a.amount, "aria-describedby": amountDesc, "aria-invalid": e.amount ? "true" : "false",
+          onChange: function (ev) { props.setField("amount", ev.target.value); } })),
+      e.amount ? h("p", { className: "err", id: "err-amount", role: "alert" }, e.amount) : null),
+
+    h("fieldset", { className: "q", "aria-describedby": patternDesc },
+      h("legend", { className: "lbl" }, "Does your income change from month to month?"),
+      h(Note, { id: "income_pattern", copy: copy }),
+      PATTERNS.map(function (p) {
+        return h("label", { className: "radio", key: p.v },
+          h("input", { type: "radio", name: "pattern", value: p.v, id: "pattern-" + p.v,
+            checked: a.pattern === p.v,
+            onChange: function () { props.setField("pattern", p.v); } }),
+          h("span", null, p.t));
+      }),
+      e.pattern ? h("p", { className: "err", id: "err-pattern", role: "alert" }, e.pattern) : null),
+
+    a.pattern !== "none" ? h("div", { className: "q" },
+      h("div", { className: "lbl", id: "proof-label" }, "Proof of your income (required)"),
+      h(Note, { id: "income_proof", copy: copy }),
+      h("p", { className: "hint", id: "proof-hint" }, "Add your latest proof of income."),
+      h("div", { className: "row", role: "group", "aria-labelledby": "proof-label", "aria-describedby": proofDesc },
+        h("div", { style: { flex: 1, position: "relative" } },
+          h("input", { id: "file", className: "vh", type: "file", accept: ".pdf,.jpg,.jpeg,.png",
+            onChange: function (ev) {
+              var f = ev.target.files && ev.target.files[0];
+              if (f) props.setField("doc", { type: "file", name: f.name });
+            } }),
+          h("label", { htmlFor: "file", className: "btn secondary" }, "Choose a document"))),
+      a.doc && a.doc.type === "file" ? h("p", { className: "picked" }, "Selected: " + a.doc.name) : null,
+      e.doc ? h("p", { className: "err", id: "err-doc", role: "alert" }, e.doc) : null) : null,
+
+    h("div", { className: "nav" },
+      h("button", { className: "link", type: "button", onClick: props.onBack }, "Back"),
+      h("button", { className: "btn", type: "button", onClick: props.onNext }, "Continue")));
+}
+
+function Screen3(props) {
+  var a = props.answers;
+  var patternLabel = (PATTERNS.filter(function (p) { return p.v === a.pattern; })[0] || {}).t || "";
+  var amountText = a.amount.trim() ? "\u20AC " + a.amount.trim() : (a.pattern === "none" ? "Not provided (no income right now)" : "Not provided");
+  var docChip = a.doc && a.doc.type === "file"
+    ? h("span", { className: "chip ok" }, "Uploaded: " + a.doc.name)
+    : h("span", { className: "chip need" }, "Still needed");
+  function row(label, value, key) {
+    return h("div", { className: "recap-row", key: key },
+      h("dl", { style: { margin: 0 } }, h("dt", null, label), h("dd", null, value)),
+      h("button", { className: "link", type: "button", onClick: props.onEdit, "aria-label": "Edit " + label }, "Edit"));
+  }
+  return h("main", null,
+    h("div", { className: "check", "aria-hidden": "true" }, "\u2713"),
+    h("h1", { id: "heading", tabIndex: -1 }, "Thanks, we have your income details"),
+    h("div", { className: "recap" },
+      row("Monthly net income", amountText, "r1"),
+      row("Income pattern", patternLabel, "r2"),
+      a.pattern === "none" ? null : row("Proof of income", docChip, "r3")),
+    h("p", null, "Next, you'll see your instalment options."),
+    h("button", { className: "btn", type: "button", onClick: props.onEnd }, "Continue to instalment options"),
+    props.ended ? h("p", { className: "ended", role: "status" },
+      "Prototype ends here. In the pilot, this step leads to the instalment options.") : null);
+}
+
+function Reviewer(props) {
+  var res = runChecks(props.copy, props.approved);
+  return h("div", { className: "rev" },
+    h("button", { type: "button", "aria-expanded": props.open ? "true" : "false", onClick: props.toggle },
+      props.open ? "Hide reviewer checks" : "Show reviewer checks (prototype tooling)"),
+    props.open ? h("div", { className: "panel" },
+      h("h2", null, "Reviewer checks"),
+      h("p", { className: "muted" }, "Runs the copy rules from the PRD against the fixed copy file. Not part of the consumer journey."),
+      h("label", { className: "tog" },
+        h("input", { type: "checkbox", checked: props.approved, onChange: function (e) { props.setApproved(e.target.checked); } }),
+        h("span", null, "Simulate legal and data-protection approval (demo only, not a real approval)")),
+      h("label", { className: "tog" },
+        h("input", { type: "checkbox", checked: props.missing, onChange: function (e) { props.setMissing(e.target.checked); } }),
+        h("span", null, "Simulate a missing note on the document question")),
+      h("div", { className: "tbl" },
+        h("table", null,
+          h("thead", null, h("tr", null, h("th", null, "Rule"), h("th", null, "Requirement"), h("th", null, "Result"), h("th", null, "Detail"))),
+          h("tbody", null, res.rows.map(function (r) {
+            var label = r.status === "pass" ? "Pass" : r.status === "warn" ? "Check" : r.status === "fail" ? "Blocked" : "By design";
+            return h("tr", { key: r.fr },
+              h("td", null, r.fr), h("td", null, r.rule),
+              h("td", null, h("span", { className: "st " + r.status }, label)),
+              h("td", null, r.detail));
+          })))),
+      h("p", { className: "verdict " + (res.ready ? "pass" : "fail"), role: "status" },
+        res.ready ? "Release build: ready (simulated approval)" : "Release build: blocked until every note is approved")) : null);
+}
+
+function App() {
+  var s1 = useState(1), screen = s1[0], setScreen = s1[1];
+  var s2 = useState({ amount: "", pattern: "", doc: null }), answers = s2[0], setAnswers = s2[1];
+  var s3 = useState({}), errors = s3[0], setErrors = s3[1];
+  var s4 = useState(false), ended = s4[0], setEnded = s4[1];
+  var s5 = useState(false), revOpen = s5[0], setRevOpen = s5[1];
+  var s6 = useState(false), approved = s6[0], setApproved = s6[1];
+  var s7 = useState(false), missing = s7[0], setMissing = s7[1];
+  var first = useRef(true);
+
+  var copy = buildCopy(approved, missing);
+
+  useEffect(function () {
+    if (first.current) { first.current = false; return; }
+    window.scrollTo(0, 0);
+    var el = document.getElementById("heading");
+    if (el) el.focus();
+  }, [screen]);
+
+  function setField(k, v) {
+    setAnswers(function (prev) { var n = Object.assign({}, prev); n[k] = v; if (k === "pattern" && v === "none") n.doc = null; return n; });
+    setErrors(function (prev) { var n = Object.assign({}, prev); delete n[k]; if (k === "pattern" && v === "none") delete n.doc; return n; });
+  }
+
+  function validate() {
+    var e = {};
+    var amt = answers.amount.trim();
+    var noIncome = answers.pattern === "none";
+    if (!amt) { if (!noIncome) e.amount = "Enter your monthly net income in euros."; }
+    else if (!/^\d+([.,]\d{1,2})?$/.test(amt)) e.amount = "Enter your monthly net income in euros.";
+    if (!answers.pattern) e.pattern = "Choose the option that fits best.";
+    if (!noIncome && (!answers.doc || answers.doc.type !== "file")) e.doc = "Proof of income is required to continue. Choose a document to add.";
+    return e;
+  }
+
+  function next2() {
+    var e = validate();
+    setErrors(e);
+    var keys = Object.keys(e);
+    if (keys.length) {
+      var target = keys[0] === "amount" ? "amount" : keys[0] === "pattern" ? "pattern-same" : "file";
+      setTimeout(function () { var el = document.getElementById(target); if (el) el.focus(); }, 0);
+      return;
+    }
+    setScreen(3);
+  }
+
+  var body;
+  if (screen === 1) body = h(Screen1, { onNext: function () { setScreen(2); } });
+  else if (screen === 2) body = h(Screen2, { answers: answers, errors: errors, copy: copy, setField: setField,
+    onBack: function () { setErrors({}); setScreen(1); }, onNext: next2 });
+  else body = h(Screen3, { answers: answers, ended: ended,
+    onEdit: function () { setEnded(false); setScreen(2); }, onEnd: function () { setEnded(true); } });
+
+  return h(React.Fragment, null,
+    h("div", { className: "app" },
+      h("div", { className: "top" }, h("span", { className: "logo" }, "Riverty"), h("span", null, "Prototype, synthetic data")),
+      body),
+    h(Reviewer, { open: revOpen, toggle: function () { setRevOpen(!revOpen); }, copy: copy, approved: approved,
+      setApproved: setApproved, missing: missing, setMissing: setMissing }));
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+</script>
+</body>
+</html>
